@@ -50,7 +50,7 @@ Vector3 point = {-1.5f, 0.6f, 0.6f};
     Vector3 end = Transform(Transform(Add(segment.origir,segment.diff),viewProjectionMatrix), viewportMatrix);
 
 		Vector3 project = Project(Subtract(point, segment.origir), segment.diff);
-
+		///
 		///
 		/// ↑更新処理ここまで
 		///
