@@ -1,5 +1,87 @@
 ﻿#include "MyMath.h"
 
+/// <summary>
+/// Vector3関数
+/// </summary>
+Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix) {
+    Vector3 result;
+    result.x = vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + vector.z * matrix.m[2][0] + matrix.m[3][0];
+    result.y = vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + vector.z * matrix.m[2][1] + matrix.m[3][1];
+    result.z = vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] + vector.z * matrix.m[2][2] + matrix.m[3][2];
+    float w = vector.x * matrix.m[0][3] + vector.y * matrix.m[1][3] + vector.z * matrix.m[2][3] + matrix.m[3][3];
+
+    assert(w != 0.0f);
+
+    result.x /= w;
+    result.y /= w;
+    result.z /= w;
+
+    return result;
+}
+
+Vector3 Project(const Vector3& v1, const Vector3& v2) {
+    float dotProduct = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+    float lengthSquared = v2.x * v2.x + v2.y * v2.y + v2.z * v2.z;
+    float scalar = dotProduct / lengthSquared;
+    Vector3 result = { v2.x * scalar, v2.y * scalar, v2.z * scalar };
+    return result;
+}
+
+Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
+     Vector3 segmentVector = Subtract(segment.diff, segment.origir);
+    Vector3 pointToSegmentStart = Subtract(point, segment.origir);
+
+    Vector3 projection = Project(pointToSegmentStart, segmentVector);
+
+    float t = (projection.x * segmentVector.x + projection.y * segmentVector.y + projection.z * segmentVector.z) /
+              (segmentVector.x * segmentVector.x + segmentVector.y * segmentVector.y + segmentVector.z * segmentVector.z);
+
+    t = fmax(0.0f, fmin(1.0f, t));
+
+    return {
+        segment.origir.x + segmentVector.x * t,
+        segment.origir.y + segmentVector.y * t,
+        segment.origir.z + segmentVector.z * t
+    };
+}
+
+Vector3 Subtract(const Vector3& v1, const Vector3& v2) {
+    return { v1.x - v2.x, v1.y - v2.y, v1.z - v2.z };
+}
+
+Vector3 Add(const Vector3& v1, const Vector3& v2) {
+    return {v1.x + v2.x, v1.y + v2.y, v1.z + v2.z};
+}
+
+Vector3 Multiply(float scalar, const Vector3& v) {
+    return {scalar * v.x, scalar * v.y, scalar * v.z};
+}
+
+Vector3 Normalize(const Vector3& v) {
+    float length = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+    if (length != 0) {
+        return { v.x / length, v.y / length, v.z / length };
+    }
+    return { 0.0f, 0.0f, 0.0f };
+}
+
+Vector3 Cross(const Vector3& v1, const Vector3& v2) {
+    Vector3 result;
+    result.x = v1.y * v2.z - v1.z * v2.y;
+    result.y = v1.z * v2.x - v1.x * v2.z;
+    result.z = v1.x * v2.y - v1.y * v2.x;
+    return result;
+}
+
+Vector3 Perpendicular(const Vector3& vector) {
+    if (vector.x != 0.0f || vector.y != 0.0f) {
+        return {-vector.y, vector.x, 0.0f};
+    }
+    return {0.0f, -vector.z, vector.y};
+}
+/// <summary>
+/// Matrix4x4関数
+/// </summary>
 Matrix4x4 Multiply(const Matrix4x4& matrix1, const Matrix4x4& matrix2) {
     Matrix4x4 result = {};
     for (int i = 0; i < 4; ++i) {
@@ -134,22 +216,6 @@ Matrix4x4 Inverse(const Matrix4x4& m) {
     return result;
 }
 
-Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix) {
-    Vector3 result;
-    result.x = vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + vector.z * matrix.m[2][0] + matrix.m[3][0];
-    result.y = vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + vector.z * matrix.m[2][1] + matrix.m[3][1];
-    result.z = vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] + vector.z * matrix.m[2][2] + matrix.m[3][2];
-    float w = vector.x * matrix.m[0][3] + vector.y * matrix.m[1][3] + vector.z * matrix.m[2][3] + matrix.m[3][3];
-
-    assert(w != 0.0f);
-
-    result.x /= w;
-    result.y /= w;
-    result.z /= w;
-
-    return result;
-}
-
 Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip) {
     Matrix4x4 result = {};
 
@@ -229,6 +295,11 @@ Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, f
     result.m[3][3] = 1.0f;
 
     return result;
+}
+
+///他の関数
+float Dot(const Vector3& v1, const Vector3& v2) {
+    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 }
 
 void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
@@ -314,36 +385,41 @@ void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, con
     }
 }
 
-Vector3 Project(const Vector3& v1, const Vector3& v2) {
-    float dotProduct = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
-    float lengthSquared = v2.x * v2.x + v2.y * v2.y + v2.z * v2.z;
-    float scalar = dotProduct / lengthSquared;
-    Vector3 result = { v2.x * scalar, v2.y * scalar, v2.z * scalar };
-    return result;
+void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+    Vector3 center = Multiply(plane.distance, plane.normal);
+    
+    Vector3 perpendicular1 = Normalize(Perpendicular(plane.normal));
+    Vector3 perpendicular2 = Cross(plane.normal, perpendicular1);
+
+    Vector3 points[4];
+    points[0] = Add(center, Add(Multiply(2.0f, perpendicular1), Multiply(2.0f, perpendicular2)));
+    points[1] = Add(center, Add(Multiply(2.0f, perpendicular1), Multiply(-2.0f, perpendicular2)));
+    points[2] = Add(center, Add(Multiply(-2.0f, perpendicular1), Multiply(-2.0f, perpendicular2)));
+    points[3] = Add(center, Add(Multiply(-2.0f, perpendicular1), Multiply(2.0f, perpendicular2)));
+
+    for (int32_t i = 0; i < 4; ++i) {
+        points[i] = Transform(Transform(points[i], viewProjectionMatrix), viewportMatrix);
+    }
+
+    for (int32_t i = 0; i < 4; ++i) {
+        int32_t nextIndex = (i + 1) % 4;
+        Novice::DrawLine((int)points[i].x, (int)points[i].y, (int)points[nextIndex].x, (int)points[nextIndex].y, color);
+    }
 }
 
-Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
-     Vector3 segmentVector = Subtract(segment.diff, segment.origir);
-    Vector3 pointToSegmentStart = Subtract(point, segment.origir);
-
-    Vector3 projection = Project(pointToSegmentStart, segmentVector);
-
-    float t = (projection.x * segmentVector.x + projection.y * segmentVector.y + projection.z * segmentVector.z) /
-              (segmentVector.x * segmentVector.x + segmentVector.y * segmentVector.y + segmentVector.z * segmentVector.z);
-
-    t = fmax(0.0f, fmin(1.0f, t));
-
-    return {
-        segment.origir.x + segmentVector.x * t,
-        segment.origir.y + segmentVector.y * t,
-        segment.origir.z + segmentVector.z * t
-    };
+//当たり判定
+//球と球
+bool IsCollisionBall(const Sphere& s1, const Sphere& s2) {
+    float distanceSquared = (s1.center.x - s2.center.x) * (s1.center.x - s2.center.x) +
+                            (s1.center.y - s2.center.y) * (s1.center.y - s2.center.y) +
+                            (s1.center.z - s2.center.z) * (s1.center.z - s2.center.z);
+    float radiusSum = s1.radius + s2.radius;
+    return distanceSquared <= (radiusSum * radiusSum);
 }
-
-Vector3 Subtract(const Vector3& v1, const Vector3& v2) {
-    return { v1.x - v2.x, v1.y - v2.y, v1.z - v2.z };
-}
-
-Vector3 Add(const Vector3& v1, const Vector3& v2) {
-    return {v1.x + v2.x, v1.y + v2.y, v1.z + v2.z};
+//球和平面
+bool IsCollisionPlane(const Sphere& sphere, const Plane& plane) {
+    
+    float distance = Dot(plane.normal, sphere.center) - plane.distance;
+   
+    return fabs(distance) <= sphere.radius;
 }
