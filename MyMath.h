@@ -58,3 +58,5 @@ void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const 
 bool IsCollisionBall(const Sphere& s1, const Sphere& s2);
 //球和平面
 bool IsCollisionPlane(const Sphere& sphere, const Plane& plane);
+//線と平面
+bool IsCollisionSegment(const Segment& segment, const Plane& plane);

@@ -28,8 +28,8 @@ Vector3 Project(const Vector3& v1, const Vector3& v2) {
 }
 
 Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
-     Vector3 segmentVector = Subtract(segment.diff, segment.origir);
-    Vector3 pointToSegmentStart = Subtract(point, segment.origir);
+     Vector3 segmentVector = Subtract(segment.diff, segment.origin);
+    Vector3 pointToSegmentStart = Subtract(point, segment.origin);
 
     Vector3 projection = Project(pointToSegmentStart, segmentVector);
 
@@ -39,9 +39,9 @@ Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
     t = fmax(0.0f, fmin(1.0f, t));
 
     return {
-        segment.origir.x + segmentVector.x * t,
-        segment.origir.y + segmentVector.y * t,
-        segment.origir.z + segmentVector.z * t
+        segment.origin.x + segmentVector.x * t,
+        segment.origin.y + segmentVector.y * t,
+        segment.origin.z + segmentVector.z * t
     };
 }
 
@@ -422,4 +422,15 @@ bool IsCollisionPlane(const Sphere& sphere, const Plane& plane) {
     float distance = Dot(plane.normal, sphere.center) - plane.distance;
    
     return fabs(distance) <= sphere.radius;
+}
+//線と平面
+bool IsCollisionSegment(const Segment& segment, const Plane& plane) {
+    // 计算 t = (d - (n · p0)) / (n · (p1 - p0))
+    float dot = Dot(plane.normal, segment.diff);
+    if (dot == 0.0f) {
+        return false; // 線と平面平行
+    }
+
+    float t = (plane.distance - Dot(plane.normal, segment.origin)) / dot;
+    return (t >= 0.0f && t <= 1.0f);
 }

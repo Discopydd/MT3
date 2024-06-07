@@ -22,7 +22,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     Vector3 viewTranslate = {0.0f, 0.0f, 0.0f};
     Vector3 cameraScale = {1.0f, 1.0f, 1.0f};
 
-    Sphere sphere ={ {0.0f, 0.0f, 0.0f}, 0.5f };
+    Segment segment = { {-0.45f, 0.41f, 0.0f}, {1.0f, 0.5f, 0.0f} };
     Plane plane = {{0.0f, 1.0f, 0.0f}, 1.0f};
 
     bool isDraggingMiddle = false;
@@ -98,6 +98,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kWindowWidth) / float(kWindowHeight), 0.1f, 100.0f);
         Matrix4x4 viewProjectionMatrix = Multiply(combinedViewMatrix, projectionMatrix);
         Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
+
+        Vector3 start = Transform(Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
+    Vector3 end = Transform(Transform(Add(segment.origin,segment.diff),viewProjectionMatrix), viewportMatrix);
         ///
         /// ↑更新処理ここまで
         ///
@@ -106,16 +109,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         /// ↓描画処理ここから
         ///
 
-       bool collision = IsCollisionPlane(sphere, plane);
+       bool collision = IsCollisionSegment(segment, plane);
        uint32_t color = collision ? RED : WHITE;
         plane.normal = Normalize(plane.normal);
         DrawPlane(plane, viewProjectionMatrix, viewportMatrix, WHITE);
-        DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, color);
+        Novice::DrawLine((int)start.x, (int)start.y,
+                     (int)end.x, (int)end.y, color);
         DrawGrid(viewProjectionMatrix, viewportMatrix);
-        DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, color);
         ImGui::Begin("Window");
-       ImGui::DragFloat3("Sphere.Center", &sphere.center.x, 0.01f);
-        ImGui::DragFloat("Sphere.Radius", &sphere.radius, 0.01f);
+       ImGui::DragFloat3("Segment.Origin", &segment.origin.x, 0.01f);
+        ImGui::DragFloat3("Segment.Diff", &segment.diff.x, 0.01f);
         ImGui::DragFloat3("Plane.Normal", &plane.normal.x, 0.01f);
         ImGui::DragFloat("Plane.Distance", &plane.distance, 0.01f);
         ImGui::End();
