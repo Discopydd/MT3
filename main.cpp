@@ -22,8 +22,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     Vector3 viewTranslate = {0.0f, 0.0f, 0.0f};
     Vector3 cameraScale = {1.0f, 1.0f, 1.0f};
 
-    Segment segment = { {-0.45f, 0.41f, 0.0f}, {1.0f, 0.5f, 0.0f} };
-    Plane plane = {{0.0f, 1.0f, 0.0f}, 1.0f};
+    Segment segment = { {0.0f, 0.5f, -1.0f}, {0.0f, 0.5f, 2.0f} };
+     Triangle triangle = { {{-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}} };
 
     bool isDraggingMiddle = false;
     int lastMousePosX = 0, lastMousePosY = 0;
@@ -109,18 +109,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         /// ↓描画処理ここから
         ///
 
-       bool collision = IsCollisionSegment(segment, plane);
+       bool collision = IsCollisionTriangle(triangle, segment);
        uint32_t color = collision ? RED : WHITE;
-        plane.normal = Normalize(plane.normal);
-        DrawPlane(plane, viewProjectionMatrix, viewportMatrix, WHITE);
+        DrawTriangle(triangle, viewProjectionMatrix, viewportMatrix, WHITE);
         Novice::DrawLine((int)start.x, (int)start.y,
                      (int)end.x, (int)end.y, color);
         DrawGrid(viewProjectionMatrix, viewportMatrix);
         ImGui::Begin("Window");
-       ImGui::DragFloat3("Segment.Origin", &segment.origin.x, 0.01f);
+        ImGui::DragFloat3("Segment.Origin", &segment.origin.x, 0.01f);
         ImGui::DragFloat3("Segment.Diff", &segment.diff.x, 0.01f);
-        ImGui::DragFloat3("Plane.Normal", &plane.normal.x, 0.01f);
-        ImGui::DragFloat("Plane.Distance", &plane.distance, 0.01f);
+        ImGui::DragFloat3("Triangle.Vertex0", &triangle.vertices[0].x, 0.01f);
+        ImGui::DragFloat3("Triangle.Vertex1", &triangle.vertices[1].x, 0.01f);
+        ImGui::DragFloat3("Triangle.Vertex2", &triangle.vertices[2].x, 0.01f);
         ImGui::End();
         ///
         /// ↑描画処理ここまで

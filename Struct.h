@@ -26,3 +26,7 @@ struct Plane
 	Vector3 normal;//!<法線
 	float distance;//!<距離
 };
+//三角形
+struct Triangle {
+    Vector3 vertices[3]; //!< 顶点
+};

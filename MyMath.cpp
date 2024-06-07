@@ -407,6 +407,24 @@ void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const 
     }
 }
 
+void DrawTriangle(
+    const Triangle& triangle, 
+    const Matrix4x4& viewProjectionMatrix, 
+    const Matrix4x4& viewportMatrix, 
+    uint32_t color) {
+    
+    Vector3 screenVertices[3];
+    for (int i = 0; i < 3; ++i) {
+        screenVertices[i] = Transform(Transform(triangle.vertices[i], viewProjectionMatrix), viewportMatrix);
+    }
+    for (int i = 0; i < 3; ++i) {
+        int next = (i + 1) % 3;
+        Novice::DrawLine((int)screenVertices[i].x, (int)screenVertices[i].y, 
+                         (int)screenVertices[next].x, (int)screenVertices[next].y, color);
+    }
+}
+
+
 //当たり判定
 //球と球
 bool IsCollisionBall(const Sphere& s1, const Sphere& s2) {
@@ -433,4 +451,31 @@ bool IsCollisionSegment(const Segment& segment, const Plane& plane) {
 
     float t = (plane.distance - Dot(plane.normal, segment.origin)) / dot;
     return (t >= 0.0f && t <= 1.0f);
+}
+//三角形と線
+bool IsCollisionTriangle(const Triangle& triangle, const Segment& segment) {
+     Vector3 edge1 = Subtract(triangle.vertices[1], triangle.vertices[0]);
+    Vector3 edge2 = Subtract(triangle.vertices[2], triangle.vertices[0]);
+    Vector3 h = Cross(segment.diff, edge2);
+    float a = Dot(edge1, h);
+    if (a > -0.00001f && a < 0.00001f) {
+        return false; // 線と三角形平行
+    }
+    float f = 1.0f / a;
+    Vector3 s = Subtract(segment.origin, triangle.vertices[0]);
+    float u = f * Dot(s, h);
+    if (u < 0.0f || u > 1.0f) {
+        return false;
+    }
+    Vector3 q = Cross(s, edge1);
+    float v = f * Dot(segment.diff, q);
+    if (v < 0.0f || u + v > 1.0f) {
+        return false;
+    }
+    // 计算線と三角形平面の交点 t
+    float t = f * Dot(edge2, q);
+    if (t > 0.0f && t < 1.0f) {
+        return true;
+    }
+    return false;
 }

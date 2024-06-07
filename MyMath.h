@@ -53,6 +53,12 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
 
 void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
+
+void DrawTriangle(
+    const Triangle& triangle,
+    const Matrix4x4& viewProjectionMatrix,
+    const Matrix4x4& viewportMatrix,
+    uint32_t color);
 //当たり判定
 //球と球
 bool IsCollisionBall(const Sphere& s1, const Sphere& s2);
@@ -60,3 +66,5 @@ bool IsCollisionBall(const Sphere& s1, const Sphere& s2);
 bool IsCollisionPlane(const Sphere& sphere, const Plane& plane);
 //線と平面
 bool IsCollisionSegment(const Segment& segment, const Plane& plane);
+//三角形と線
+bool IsCollisionTriangle(const Triangle& triangle, const Segment& segment);
