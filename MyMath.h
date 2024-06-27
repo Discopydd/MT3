@@ -59,6 +59,10 @@ void DrawTriangle(
     const Matrix4x4& viewProjectionMatrix,
     const Matrix4x4& viewportMatrix,
     uint32_t color);
+
+// AABBを描画する関数
+void DrawAABB(const AABB& aabb, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
+
 //当たり判定
 //球と球
 bool IsCollisionBall(const Sphere& s1, const Sphere& s2);
@@ -68,3 +72,5 @@ bool IsCollisionPlane(const Sphere& sphere, const Plane& plane);
 bool IsCollisionSegment(const Segment& segment, const Plane& plane);
 //三角形と線
 bool IsCollisionTriangle(const Triangle& triangle, const Segment& segment);
+//AABBとAABB
+bool IsCollisionBox(const AABB& aabb1, const AABB& aabb2);

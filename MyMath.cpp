@@ -424,6 +424,38 @@ void DrawTriangle(
     }
 }
 
+// AABBを描画する関数
+void DrawAABB(const AABB& aabb, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+    Vector3 vertices[8];
+    
+    vertices[0] = Transform(Transform({ aabb.min.x, aabb.min.y, aabb.min.z }, viewProjectionMatrix), viewportMatrix);
+    vertices[1] = Transform(Transform({ aabb.max.x, aabb.min.y, aabb.min.z }, viewProjectionMatrix), viewportMatrix);
+    vertices[2] = Transform(Transform({ aabb.max.x, aabb.max.y, aabb.min.z }, viewProjectionMatrix), viewportMatrix);
+    vertices[3] = Transform(Transform({ aabb.min.x, aabb.max.y, aabb.min.z }, viewProjectionMatrix), viewportMatrix);
+    vertices[4] = Transform(Transform({ aabb.min.x, aabb.min.y, aabb.max.z }, viewProjectionMatrix), viewportMatrix);
+    vertices[5] = Transform(Transform({ aabb.max.x, aabb.min.y, aabb.max.z }, viewProjectionMatrix), viewportMatrix);
+    vertices[6] = Transform(Transform({ aabb.max.x, aabb.max.y, aabb.max.z }, viewProjectionMatrix), viewportMatrix);
+    vertices[7] = Transform(Transform({ aabb.min.x, aabb.max.y, aabb.max.z }, viewProjectionMatrix), viewportMatrix);
+    
+    // Bottom face
+    Novice::DrawLine((int)vertices[0].x, (int)vertices[0].y, (int)vertices[1].x, (int)vertices[1].y, color);
+    Novice::DrawLine((int)vertices[1].x, (int)vertices[1].y, (int)vertices[2].x, (int)vertices[2].y, color);
+    Novice::DrawLine((int)vertices[2].x, (int)vertices[2].y, (int)vertices[3].x, (int)vertices[3].y, color);
+    Novice::DrawLine((int)vertices[3].x, (int)vertices[3].y, (int)vertices[0].x, (int)vertices[0].y, color);
+    
+    // Top face
+    Novice::DrawLine((int)vertices[4].x, (int)vertices[4].y, (int)vertices[5].x, (int)vertices[5].y, color);
+    Novice::DrawLine((int)vertices[5].x, (int)vertices[5].y, (int)vertices[6].x, (int)vertices[6].y, color);
+    Novice::DrawLine((int)vertices[6].x, (int)vertices[6].y, (int)vertices[7].x, (int)vertices[7].y, color);
+    Novice::DrawLine((int)vertices[7].x, (int)vertices[7].y, (int)vertices[4].x, (int)vertices[4].y, color);
+    
+    // Vertical lines
+    Novice::DrawLine((int)vertices[0].x, (int)vertices[0].y, (int)vertices[4].x, (int)vertices[4].y, color);
+    Novice::DrawLine((int)vertices[1].x, (int)vertices[1].y, (int)vertices[5].x, (int)vertices[5].y, color);
+    Novice::DrawLine((int)vertices[2].x, (int)vertices[2].y, (int)vertices[6].x, (int)vertices[6].y, color);
+    Novice::DrawLine((int)vertices[3].x, (int)vertices[3].y, (int)vertices[7].x, (int)vertices[7].y, color);
+}
+
 
 //当たり判定
 //球と球
@@ -475,6 +507,15 @@ bool IsCollisionTriangle(const Triangle& triangle, const Segment& segment) {
     // 计算線と三角形平面の交点 t
     float t = f * Dot(edge2, q);
     if (t > 0.0f && t < 1.0f) {
+        return true;
+    }
+    return false;
+}
+//AABBとAABB
+bool IsCollisionBox(const AABB& aabb1, const AABB& aabb2) {
+   if ((aabb1.min.x <= aabb2.max.x && aabb1.max.x >= aabb2.min.x) &&
+        (aabb1.min.y <= aabb2.max.y && aabb1.max.y >= aabb2.min.y) &&
+        (aabb1.min.z <= aabb2.max.z && aabb1.max.z >= aabb2.min.z)) {
         return true;
     }
     return false;

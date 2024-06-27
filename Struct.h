@@ -30,3 +30,8 @@ struct Plane
 struct Triangle {
     Vector3 vertices[3]; //!< 顶点
 };
+struct AABB {
+	Vector3 min;
+	Vector3 max;
+
+};
