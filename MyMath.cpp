@@ -79,6 +79,14 @@ Vector3 Perpendicular(const Vector3& vector) {
     }
     return {0.0f, -vector.z, vector.y};
 }
+
+Vector3 ClosestPointOnAABB(const Vector3& point, const AABB& aabb) {
+    return {
+        std::clamp(point.x, aabb.min.x, aabb.max.x),
+        std::clamp(point.y, aabb.min.y, aabb.max.y),
+        std::clamp(point.z, aabb.min.z, aabb.max.z)
+    };
+}
 /// <summary>
 /// Matrix4x4関数
 /// </summary>
@@ -302,6 +310,11 @@ float Dot(const Vector3& v1, const Vector3& v2) {
     return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 }
 
+
+float Length(const Vector3& v) {
+    return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+}
+
 void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
     const float kGridHalfwidth = 2.0f;
     const uint32_t kSubdivision = 10;
@@ -519,4 +532,11 @@ bool IsCollisionBox(const AABB& aabb1, const AABB& aabb2) {
         return true;
     }
     return false;
+}
+//AABBと球
+bool IsCollisionBaBo(const AABB& aabb, const Sphere& sphere)
+{
+      Vector3 closestPoint = ClosestPointOnAABB(sphere.center, aabb);
+    float distanceSquared = Length(Subtract(closestPoint, sphere.center));
+    return distanceSquared <= (sphere.radius * sphere.radius);
 }

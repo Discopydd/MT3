@@ -28,6 +28,8 @@ Vector3 Normalize(const Vector3& v);
 Vector3 Cross(const Vector3& v1, const Vector3& v2);
 
 Vector3 Perpendicular(const Vector3& vector);
+
+Vector3 ClosestPointOnAABB(const Vector3& point, const AABB& aabb);
 /// <summary>
 /// Matrix4x4関数
 /// </summary>
@@ -47,6 +49,9 @@ Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, f
 /// 他の関数
 /// </summary>
 float Dot(const Vector3& v1, const Vector3& v2);
+
+
+float Length(const Vector3& v);
 
 void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
 
@@ -74,3 +79,5 @@ bool IsCollisionSegment(const Segment& segment, const Plane& plane);
 bool IsCollisionTriangle(const Triangle& triangle, const Segment& segment);
 //AABBとAABB
 bool IsCollisionBox(const AABB& aabb1, const AABB& aabb2);
+//AABBと球
+bool IsCollisionBaBo(const AABB& aabb, const Sphere& sphere);
