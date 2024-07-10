@@ -23,8 +23,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     Vector3 viewTranslate = {0.0f, 0.0f, 0.0f};
     Vector3 cameraScale = {1.0f, 1.0f, 1.0f};
 
-    AABB aabb = {{-0.5f, -0.5f, -0.5f}, {0.5f, 0.5f, 0.5f}};
-    Segment segment = {{-0.7f, 0.3f, 0.0f}, {2.0f, -0.5f, 0.0f}};
+    Vector3 controlPoints[3] = {
+        {-0.8f, 0.58f, 1.0f},
+        {1.76f, 1.0f, -0.3f},
+        {0.94f, -0.7f, 2.3f}
+    };
 
     bool isDraggingMiddle = false;
     int lastMousePosX = 0, lastMousePosY = 0;
@@ -100,8 +103,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         Matrix4x4 viewProjectionMatrix = Multiply(combinedViewMatrix, projectionMatrix);
         Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
-        bool collision = IsCollisionBoxSegment(aabb, segment);
-        uint32_t colorAABB = collision ? RED : WHITE;
+        uint32_t color = WHITE;
         ///
         /// ↑更新処理ここまで
         ///
@@ -110,22 +112,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         /// ↓描画処理ここから
         ///
 
-       DrawAABB(aabb, viewProjectionMatrix, viewportMatrix, colorAABB);
-       DrawSegment(segment, viewProjectionMatrix, viewportMatrix, WHITE);
+        DrawBezier(controlPoints[0], controlPoints[1], controlPoints[2], viewProjectionMatrix, viewportMatrix, color);
 
+        for (int i = 0; i < 3; ++i) {
+            Sphere sphere = { controlPoints[i], 0.01f }; 
+            DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, BLACK);
+        }
 
         DrawGrid(viewProjectionMatrix, viewportMatrix);
         ImGui::Begin("Window");
-        ImGui::DragFloat3("AABB Min", &aabb.min.x, 0.01f);
-        ImGui::DragFloat3("AABB Max", &aabb.max.x, 0.01f);
-        ImGui::DragFloat3("Segment Origin", &segment.origin.x, 0.01f);
-        ImGui::DragFloat3("Segment Diff", &segment.diff.x, 0.01f);
-        aabb.min.x = min(aabb.min.x, aabb.max.x);
-        aabb.max.x = max(aabb.min.x, aabb.max.x);
-        aabb.min.y = min(aabb.min.y, aabb.max.y);
-        aabb.max.y = max(aabb.min.y, aabb.max.y);
-        aabb.min.z = min(aabb.min.z, aabb.max.z);
-        aabb.max.z = max(aabb.min.z, aabb.max.z);
+        ImGui::DragFloat3("Control Point 0", &controlPoints[0].x, 0.01f);
+        ImGui::DragFloat3("Control Point 1", &controlPoints[1].x, 0.01f);
+        ImGui::DragFloat3("Control Point 2", &controlPoints[2].x, 0.01f);
         ImGui::End();
         ///
         /// ↑描画処理ここまで

@@ -30,6 +30,10 @@ Vector3 Cross(const Vector3& v1, const Vector3& v2);
 Vector3 Perpendicular(const Vector3& vector);
 
 Vector3 ClosestPointOnAABB(const Vector3& point, const AABB& aabb);
+
+//二次ベジェ曲線
+Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t);
+
 /// <summary>
 /// Matrix4x4関数
 /// </summary>
@@ -70,6 +74,8 @@ void DrawTriangle(
 // AABBを描画する関数
 void DrawAABB(const AABB& aabb, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
 
+//二次ベジェ曲線を描画する関数
+void DrawBezier(const Vector3& controlPoint0, const Vector3& controlPoint1, const Vector3& controlPoint2, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
 //当たり判定
 //球と球
 bool IsCollisionBall(const Sphere& s1, const Sphere& s2);
