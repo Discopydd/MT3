@@ -87,6 +87,16 @@ Vector3 ClosestPointOnAABB(const Vector3& point, const AABB& aabb) {
         std::clamp(point.z, aabb.min.z, aabb.max.z)
     };
 }
+
+//二次ベジェ曲線
+Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t) {
+    return {
+        v1.x + t * (v2.x - v1.x),
+        v1.y + t * (v2.y - v1.y),
+        v1.z + t * (v2.z - v1.z)
+    };
+}
+
 /// <summary>
 /// Matrix4x4関数
 /// </summary>
@@ -475,6 +485,28 @@ void DrawAABB(const AABB& aabb, const Matrix4x4& viewProjectionMatrix, const Mat
     Novice::DrawLine((int)vertices[2].x, (int)vertices[2].y, (int)vertices[6].x, (int)vertices[6].y, color);
     Novice::DrawLine((int)vertices[3].x, (int)vertices[3].y, (int)vertices[7].x, (int)vertices[7].y, color);
 }
+
+////二次ベジェ曲線を描画する関数
+void DrawBezier(const Vector3& controlPoint0, const Vector3& controlPoint1, const Vector3& controlPoint2, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+    const int kSegments = 100;
+    Vector3 prevPoint = controlPoint0;
+
+    for (int i = 1; i <= kSegments; ++i) {
+        float t = i / static_cast<float>(kSegments);
+        Vector3 p0 = Lerp(controlPoint0, controlPoint1, t);
+        Vector3 p1 = Lerp(controlPoint1, controlPoint2, t);
+        Vector3 point = Lerp(p0, p1, t);
+
+        Vector3 screenPrevPoint = Transform(Transform(prevPoint, viewProjectionMatrix), viewportMatrix);
+        Vector3 screenPoint = Transform(Transform(point, viewProjectionMatrix), viewportMatrix);
+
+        Novice::DrawLine((int)(screenPrevPoint.x), (int)(screenPrevPoint.y),
+                         (int)(screenPoint.x), (int)(screenPoint.y), color);
+
+        prevPoint = point;
+    }
+}
+
 
 
 //当たり判定
