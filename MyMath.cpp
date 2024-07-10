@@ -315,6 +315,13 @@ float Length(const Vector3& v) {
     return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 }
 
+void DrawSegment(const Segment& segment, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+    Vector3 start = Transform(Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
+    Vector3 end = Transform(Transform(Add(segment.origin, segment.diff), viewProjectionMatrix), viewportMatrix);
+
+    Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, color);
+}
+
 void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
     const float kGridHalfwidth = 2.0f;
     const uint32_t kSubdivision = 10;
@@ -534,9 +541,47 @@ bool IsCollisionBox(const AABB& aabb1, const AABB& aabb2) {
     return false;
 }
 //AABBと球
-bool IsCollisionBaBo(const AABB& aabb, const Sphere& sphere)
+bool IsCollisionBoxBall(const AABB& aabb, const Sphere& sphere)
 {
       Vector3 closestPoint = ClosestPointOnAABB(sphere.center, aabb);
     float distanceSquared = Length(Subtract(closestPoint, sphere.center));
     return distanceSquared <= (sphere.radius * sphere.radius);
+}
+//AABBと線
+bool IsCollisionBoxSegment(const AABB& aabb, const Segment& segment)
+{
+   float tmin = (aabb.min.x - segment.origin.x) / segment.diff.x;
+    float tmax = (aabb.max.x - segment.origin.x) / segment.diff.x;
+
+    if (tmin > tmax) std::swap(tmin, tmax);
+
+    float tymin = (aabb.min.y - segment.origin.y) / segment.diff.y;
+    float tymax = (aabb.max.y - segment.origin.y) / segment.diff.y;
+
+    if (tymin > tymax) std::swap(tymin, tymax);
+
+    if ((tmin > tymax) || (tymin > tmax))
+        return false;
+
+    if (tymin > tmin)
+        tmin = tymin;
+
+    if (tymax < tmax)
+        tmax = tymax;
+
+    float tzmin = (aabb.min.z - segment.origin.z) / segment.diff.z;
+    float tzmax = (aabb.max.z - segment.origin.z) / segment.diff.z;
+
+    if (tzmin > tzmax) std::swap(tzmin, tzmax);
+
+    if ((tmin > tzmax) || (tzmin > tmax))
+        return false;
+
+    if (tzmin > tmin)
+        tmin = tzmin;
+
+    if (tzmax < tmax)
+        tmax = tzmax;
+
+    return (tmin < 1.0f && tmax > 0.0f);
 }

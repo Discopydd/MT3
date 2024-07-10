@@ -53,6 +53,8 @@ float Dot(const Vector3& v1, const Vector3& v2);
 
 float Length(const Vector3& v);
 
+void DrawSegment(const Segment& segment, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
+
 void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
 
 void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
@@ -80,4 +82,6 @@ bool IsCollisionTriangle(const Triangle& triangle, const Segment& segment);
 //AABBとAABB
 bool IsCollisionBox(const AABB& aabb1, const AABB& aabb2);
 //AABBと球
-bool IsCollisionBaBo(const AABB& aabb, const Sphere& sphere);
+bool IsCollisionBoxBall(const AABB& aabb, const Sphere& sphere);
+//AABBと線
+bool IsCollisionBoxSegment(const AABB& aabb, const Segment& segment);
