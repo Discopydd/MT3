@@ -16,33 +16,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     // ライブラリの初期化
     Novice::Initialize(kWindowTitle, 1280, 720);
 
-    const float moveSpeed = 0.01f;
+ 
 
     Vector3 cameraTranslate = {0.0f, 2.64f, -9.27f};
     Vector3 cameraRotate = {0.26f, 0.0f, 0.0f};
     Vector3 viewTranslate = {0.0f, 0.0f, 0.0f};
     Vector3 cameraScale = {1.0f, 1.0f, 1.0f};
 
-   Vector3 translates[3] = {
-        {0.2f, 1.0f, 0.0f}, // 肩
-        {0.4f, 0.0f, 0.0f}, // 肘
-        {0.3f, 0.0f, 0.0f}  // 手
-    };
+  
+     Vector3 a = {0.2f, 1.0f, 0.0f};
+    Vector3 b = {2.4f, 3.1f, 1.2f};
+    Vector3 c = a + b;
+    Vector3 d = a - b;
+    Vector3 e = a * 2.4f;
+      Vector3 rotate = {0.4f, 1.43f, -0.8f};
+    Matrix4x4 rotateXMatrix = MakeRotateXMatrix(rotate.x);
+    Matrix4x4 rotateYMatrix = MakeRotateYMatrix(rotate.y);
+    Matrix4x4 rotateZMatrix = MakeRotateZMatrix(rotate.z);
+    Matrix4x4 rotateMatrix = rotateXMatrix * rotateYMatrix * rotateZMatrix;
 
-    Vector3 rotates[3] = {
-        {0.0f, 0.0f, -6.8f}, // 肩
-        {0.0f, 0.0f, -1.4f}, // 肘
-        {0.0f, 0.0f, 0.0f}   // 手
-    };
-
-    Vector3 scales[3] = {
-        {1.0f, 1.0f, 1.0f}, // 肩
-        {1.0f, 1.0f, 1.0f}, // 肘
-        {1.0f, 1.0f, 1.0f}  // 手
-    };
-
-    bool isDraggingMiddle = false;
-    int lastMousePosX = 0, lastMousePosY = 0;
     // キー入力結果を受け取る箱
     char keys[256] = {0};
     char preKeys[256] = {0};
@@ -59,76 +51,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         ///
         /// ↓更新処理ここから
         ///
-        ///カメラ移動
-        if (keys[DIK_W]) {
-            cameraTranslate.z += moveSpeed;
-        }
-        if (keys[DIK_S]) {
-            cameraTranslate.z -= moveSpeed;
-        }
-        if (keys[DIK_A]) {
-            cameraTranslate.x -= moveSpeed;
-        }
-        if (keys[DIK_D]) {
-            cameraTranslate.x += moveSpeed;
-        }
-        if (keys[DIK_UP]) {
-            cameraTranslate.y += moveSpeed;
-        }
-        if (keys[DIK_DOWN]) { cameraTranslate.y -= moveSpeed;}
-        int mouseX, mouseY;
-        Novice::GetMousePosition(&mouseX, &mouseY);
-        if (Novice::IsPressMouse(2)) { 
-            if (!isDraggingMiddle) {
-                isDraggingMiddle = true;
-                lastMousePosX = mouseX;
-                lastMousePosY = mouseY;
-            } else {
-                int deltaX = mouseX - lastMousePosX;
-                int deltaY = mouseY - lastMousePosY;
+      
 
-                cameraRotate.y += deltaX * 0.001f;
-                cameraRotate.x += deltaY * 0.001f;
-
-                lastMousePosX = mouseX;
-                lastMousePosY = mouseY;
-            }
-        } else {
-            isDraggingMiddle = false;
-        }
-
-        int wheel = Novice::GetWheel();
-        Vector3 forward = {
-            -sin(cameraRotate.y) * cos(cameraRotate.x),
-            sin(cameraRotate.x),
-            -cos(cameraRotate.y) * cos(cameraRotate.x)
-        };
-
-        cameraTranslate.x -= forward.x * wheel * 0.001f;
-        cameraTranslate.y -= forward.y * wheel * 0.001f;
-        cameraTranslate.z -= forward.z * wheel * 0.001f;
-        
-         Matrix4x4 viewMatrix = MakeAffineMatrix({1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, viewTranslate);
-        Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraScale, cameraRotate, cameraTranslate);
-        Matrix4x4 combinedViewMatrix = Multiply(viewMatrix, Inverse(cameraMatrix));
+        Matrix4x4 cameraMatrix = MakeAffineMatrix({1.0f, 1.0f, 1.0f}, cameraRotate, cameraTranslate);
+        Matrix4x4 viewMatrix = Inverse(cameraMatrix);
         Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kWindowWidth) / float(kWindowHeight), 0.1f, 100.0f);
-        Matrix4x4 viewProjectionMatrix = Multiply(combinedViewMatrix, projectionMatrix);
-        Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
-
-        Matrix4x4 shoulderLocalMatrix = MakeAffineMatrix(scales[0], rotates[0], translates[0]);
-        Matrix4x4 shoulderWorldMatrix = shoulderLocalMatrix;
-
-        Matrix4x4 elbowLocalMatrix = MakeAffineMatrix(scales[1], rotates[1], translates[1]);
-        Matrix4x4 elbowWorldMatrix = Multiply(elbowLocalMatrix, shoulderWorldMatrix);
-
-        Matrix4x4 handLocalMatrix = MakeAffineMatrix(scales[2], rotates[2], translates[2]);
-        Matrix4x4 handWorldMatrix = Multiply(handLocalMatrix, elbowWorldMatrix);
-
-
-        Sphere shoulder = { Transform({0.0f, 0.0f, 0.0f}, shoulderWorldMatrix), 0.05f };
-        Sphere elbow = { Transform({0.0f, 0.0f, 0.0f}, elbowWorldMatrix), 0.05f };
-        Sphere hand = { Transform({0.0f, 0.0f, 0.0f}, handWorldMatrix), 0.05f };
-
+        Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
+        Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f); 
         
 
        
@@ -139,26 +68,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         ///
         /// ↓描画処理ここから
         ///
-        DrawSphere(shoulder, viewProjectionMatrix, viewportMatrix, RED);
-        DrawSphere(elbow, viewProjectionMatrix, viewportMatrix, GREEN);
-        DrawSphere(hand, viewProjectionMatrix, viewportMatrix, BLUE);
-        // 肩-肘、肘-手の線を描画
-        Segment shoulderToElbow = {shoulder.center, Subtract(elbow.center, shoulder.center)};
-        Segment elbowToHand = {elbow.center, Subtract(hand.center, elbow.center)};
-        
-        DrawSegment(shoulderToElbow, viewProjectionMatrix, viewportMatrix, WHITE);
-        DrawSegment(elbowToHand, viewProjectionMatrix, viewportMatrix, WHITE);
+      
         DrawGrid(viewProjectionMatrix, viewportMatrix);
         ImGui::Begin("Window");
-        ImGui::DragFloat3("translates[0]", &translates[0].x, 0.01f);
-         ImGui::DragFloat3("rotates[0]", &rotates[0].x, 0.01f);
-           ImGui::DragFloat3("scales[0]", &scales[0].x, 0.01f);
-        ImGui::DragFloat3("translates[1]", &translates[1].x, 0.01f);
-         ImGui::DragFloat3("rotates[1]", &rotates[1].x, 0.01f);
-           ImGui::DragFloat3("scales[1]", &scales[1].x, 0.01f);
-        ImGui::DragFloat3("translates[2]", &translates[2].x, 0.01f);
-        ImGui::DragFloat3("rotates[2]", &rotates[2].x, 0.01f);
-        ImGui::DragFloat3("scales[2]", &scales[2].x, 0.01f);
+       ImGui::Text("c: %f, %f, %f", c.x, c.y, c.z);
+        ImGui::Text("d: %f, %f, %f", d.x, d.y, d.z);
+        ImGui::Text("e: %f, %f, %f", e.x, e.y, e.z);
+        ImGui::Text("matrix:\n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f",
+                    rotateMatrix.m[0][0], rotateMatrix.m[0][1], rotateMatrix.m[0][2], rotateMatrix.m[0][3],
+                    rotateMatrix.m[1][0], rotateMatrix.m[1][1], rotateMatrix.m[1][2], rotateMatrix.m[1][3],
+                    rotateMatrix.m[2][0], rotateMatrix.m[2][1], rotateMatrix.m[2][2], rotateMatrix.m[2][3],
+                    rotateMatrix.m[3][0], rotateMatrix.m[3][1], rotateMatrix.m[3][2], rotateMatrix.m[3][3]);
         ImGui::End();
         ///
         /// ↑描画処理ここまで
