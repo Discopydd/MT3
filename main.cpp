@@ -13,26 +13,25 @@ const char kWindowTitle[] = "LE2C_29_リ_ヨン";
 
 bool isStarted = false; 
 
-Spring spring{};
+Pendulum pendulum{};
 Ball ball{};
-
-float angularVelocity = 3.14f; // 角速度 π rad/s
-float angle = 0.0f;            // 角度
-float radius = 0.8f;           //
 
 void Reset() {
 
-    ball.position = {radius, 2.0f, 0.0f}; 
-     ball.position.x = spring.anchor.x + radius * std::cos(angle);
-            ball.position.y = spring.anchor.y + radius * std::sin(angle);
-            ball.position.z = spring.anchor.z;
-    ball.velocity = {0.0f, 0.0f, 0.0f};
-    ball.acceleration = {0.0f, 0.0f, 0.0f};
-    ball.mass = 2.0f;
-    ball.radius = 0.05f;
-    ball.color = 0x0000FFFF;
+   pendulum.anchor = {0.0f, 1.0f, 0.0f}; 
+    pendulum.length = 0.8f;                
+    pendulum.angle = 0.7f;               
+    pendulum.angularVelocity = 0.0f;     
+    pendulum.angularAcceleration = 0.0f;   
 
-    angle = 0.0f;
+
+     ball.radius = 0.05f;
+    ball.color = 0x0000FFFF; 
+
+     ball.position.x = pendulum.anchor.x + std::sin(pendulum.angle) * pendulum.length;
+    ball.position.y = pendulum.anchor.y - std::cos(pendulum.angle) * pendulum.length;
+    ball.position.z = pendulum.anchor.z;
+
     isStarted = false; 
 }
 
@@ -77,11 +76,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
         Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f); 
         if (isStarted) {
-            angle += angularVelocity * deltaTime;
+            pendulum.angularAcceleration = -(9.8f / pendulum.length) * std::sin(pendulum.angle);
 
-            ball.position.x = spring.anchor.x + radius * std::cos(angle);
-            ball.position.y = spring.anchor.y + radius * std::sin(angle);
-            ball.position.z = spring.anchor.z;
+            pendulum.angularVelocity += pendulum.angularAcceleration * deltaTime;
+
+            pendulum.angle += pendulum.angularVelocity * deltaTime;
+
+            ball.position.x = pendulum.anchor.x + std::sin(pendulum.angle) * pendulum.length;
+            ball.position.y = pendulum.anchor.y - std::cos(pendulum.angle) * pendulum.length;
+            ball.position.z = pendulum.anchor.z;
         }
         ///
         /// ↑更新処理ここまで
@@ -90,8 +93,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         ///
         /// ↓描画処理ここから
         ///
-      DrawSphere({ball.position, ball.radius}, viewProjectionMatrix, viewportMatrix, ball.color);
-
+     DrawSphere({ball.position, ball.radius}, viewProjectionMatrix, viewportMatrix, ball.color);
+       DrawSegment({pendulum.anchor,ball.position - pendulum.anchor}, viewProjectionMatrix, viewportMatrix, 0xFFFFFFFF);
         DrawGrid(viewProjectionMatrix, viewportMatrix);
         ImGui::Begin("Window");
      

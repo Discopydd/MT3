@@ -51,3 +51,10 @@ struct Ball {
     float radius;        // ボールの半径
     unsigned int color;  // ボールの色
 };
+struct Pendulum {
+    Vector3 anchor;             // 固定された端の位置
+    float length;               // 紐の長さ
+    float angle;                // 現在の角度
+    float angularVelocity;      // 角速度
+    float angularAcceleration;  // 角加速度
+};
