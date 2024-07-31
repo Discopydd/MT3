@@ -10,30 +10,44 @@ static const int kWindowHeight = 720;
 
 const char kWindowTitle[] = "LE2C_29_リ_ヨン";
 
+
+bool isStarted = false; 
+
+Spring spring{};
+Ball ball{};
+
+void Reset() {
+    spring.anchor = {0.0f, 0.6f, 0.0f};
+    spring.naturalLength = 1.0f;
+    spring.stiffness = 100.0f;
+    spring.dampingCoefficient = 2.0f; 
+
+    ball.position = {1.2f, 0.6f, 0.0f};
+    ball.velocity = {0.0f, 0.0f, 0.0f};
+    ball.acceleration = {0.0f, 0.0f, 0.0f};
+    ball.mass = 2.0f;
+    ball.radius = 0.05f;
+    ball.color = 0x0000FFFF;
+
+    isStarted = false;
+}
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     // ライブラリの初期化
     Novice::Initialize(kWindowTitle, 1280, 720);
 
- 
 
     Vector3 cameraTranslate = {0.0f, 2.64f, -9.27f};
     Vector3 cameraRotate = {0.26f, 0.0f, 0.0f};
-    Vector3 viewTranslate = {0.0f, 0.0f, 0.0f};
-    Vector3 cameraScale = {1.0f, 1.0f, 1.0f};
 
-  
-     Vector3 a = {0.2f, 1.0f, 0.0f};
-    Vector3 b = {2.4f, 3.1f, 1.2f};
-    Vector3 c = a + b;
-    Vector3 d = a - b;
-    Vector3 e = a * 2.4f;
-      Vector3 rotate = {0.4f, 1.43f, -0.8f};
-    Matrix4x4 rotateXMatrix = MakeRotateXMatrix(rotate.x);
-    Matrix4x4 rotateYMatrix = MakeRotateYMatrix(rotate.y);
-    Matrix4x4 rotateZMatrix = MakeRotateZMatrix(rotate.z);
-    Matrix4x4 rotateMatrix = rotateXMatrix * rotateYMatrix * rotateZMatrix;
+
+
+    Reset(); 
+
+
+    float deltaTime = 1.0f / 60.0f;
 
     // キー入力結果を受け取る箱
     char keys[256] = {0};
@@ -58,9 +72,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kWindowWidth) / float(kWindowHeight), 0.1f, 100.0f);
         Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
         Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f); 
-        
+        if (isStarted) {
+            Vector3 diff = ball.position - spring.anchor;
+            float length = Length(diff);
+            if (length != 0.0f) {
+                Vector3 direction = Normalize(diff);
+                Vector3 restPosition = spring.anchor + direction * spring.naturalLength;
+                Vector3 displacement = ball.position - restPosition;
+                Vector3 restoringForce = -spring.stiffness * displacement;
 
-       
+                // 
+                Vector3 dampingForce = -spring.dampingCoefficient * ball.velocity;
+
+                //
+                Vector3 force = restoringForce + dampingForce;
+                ball.acceleration = force / ball.mass;
+            }
+
+            // 加速度と速度を用いてボールの位置と速度を更新する
+            ball.velocity += ball.acceleration * deltaTime;
+            ball.position += ball.velocity * deltaTime;
+        }
         ///
         /// ↑更新処理ここまで
         ///
@@ -68,17 +100,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         ///
         /// ↓描画処理ここから
         ///
-      
+       DrawSphere({ball.position, ball.radius}, viewProjectionMatrix, viewportMatrix, ball.color);
+        DrawSegment({spring.anchor, ball.position - spring.anchor}, viewProjectionMatrix, viewportMatrix, 0xFFFFFFFF);
+
         DrawGrid(viewProjectionMatrix, viewportMatrix);
         ImGui::Begin("Window");
-       ImGui::Text("c: %f, %f, %f", c.x, c.y, c.z);
-        ImGui::Text("d: %f, %f, %f", d.x, d.y, d.z);
-        ImGui::Text("e: %f, %f, %f", e.x, e.y, e.z);
-        ImGui::Text("matrix:\n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f",
-                    rotateMatrix.m[0][0], rotateMatrix.m[0][1], rotateMatrix.m[0][2], rotateMatrix.m[0][3],
-                    rotateMatrix.m[1][0], rotateMatrix.m[1][1], rotateMatrix.m[1][2], rotateMatrix.m[1][3],
-                    rotateMatrix.m[2][0], rotateMatrix.m[2][1], rotateMatrix.m[2][2], rotateMatrix.m[2][3],
-                    rotateMatrix.m[3][0], rotateMatrix.m[3][1], rotateMatrix.m[3][2], rotateMatrix.m[3][3]);
+     
+           if (ImGui::Button("Start")) {
+              Reset();
+            isStarted = true; 
+           
+        }
         ImGui::End();
         ///
         /// ↑描画処理ここまで
