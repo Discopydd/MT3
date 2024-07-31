@@ -16,20 +16,24 @@ bool isStarted = false;
 Spring spring{};
 Ball ball{};
 
-void Reset() {
-    spring.anchor = {0.0f, 0.6f, 0.0f};
-    spring.naturalLength = 1.0f;
-    spring.stiffness = 100.0f;
-    spring.dampingCoefficient = 2.0f; 
+float angularVelocity = 3.14f; // 角速度 π rad/s
+float angle = 0.0f;            // 角度
+float radius = 0.8f;           //
 
-    ball.position = {1.2f, 0.6f, 0.0f};
+void Reset() {
+
+    ball.position = {radius, 2.0f, 0.0f}; 
+     ball.position.x = spring.anchor.x + radius * std::cos(angle);
+            ball.position.y = spring.anchor.y + radius * std::sin(angle);
+            ball.position.z = spring.anchor.z;
     ball.velocity = {0.0f, 0.0f, 0.0f};
     ball.acceleration = {0.0f, 0.0f, 0.0f};
     ball.mass = 2.0f;
     ball.radius = 0.05f;
     ball.color = 0x0000FFFF;
 
-    isStarted = false;
+    angle = 0.0f;
+    isStarted = false; 
 }
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -73,25 +77,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
         Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f); 
         if (isStarted) {
-            Vector3 diff = ball.position - spring.anchor;
-            float length = Length(diff);
-            if (length != 0.0f) {
-                Vector3 direction = Normalize(diff);
-                Vector3 restPosition = spring.anchor + direction * spring.naturalLength;
-                Vector3 displacement = ball.position - restPosition;
-                Vector3 restoringForce = -spring.stiffness * displacement;
+            angle += angularVelocity * deltaTime;
 
-                // 
-                Vector3 dampingForce = -spring.dampingCoefficient * ball.velocity;
-
-                //
-                Vector3 force = restoringForce + dampingForce;
-                ball.acceleration = force / ball.mass;
-            }
-
-            // 加速度と速度を用いてボールの位置と速度を更新する
-            ball.velocity += ball.acceleration * deltaTime;
-            ball.position += ball.velocity * deltaTime;
+            ball.position.x = spring.anchor.x + radius * std::cos(angle);
+            ball.position.y = spring.anchor.y + radius * std::sin(angle);
+            ball.position.z = spring.anchor.z;
         }
         ///
         /// ↑更新処理ここまで
@@ -100,8 +90,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         ///
         /// ↓描画処理ここから
         ///
-       DrawSphere({ball.position, ball.radius}, viewProjectionMatrix, viewportMatrix, ball.color);
-        DrawSegment({spring.anchor, ball.position - spring.anchor}, viewProjectionMatrix, viewportMatrix, 0xFFFFFFFF);
+      DrawSphere({ball.position, ball.radius}, viewProjectionMatrix, viewportMatrix, ball.color);
 
         DrawGrid(viewProjectionMatrix, viewportMatrix);
         ImGui::Begin("Window");
