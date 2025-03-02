@@ -100,6 +100,35 @@ Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t) {
 /// <summary>
 /// Matrix4x4関数
 /// </summary>
+
+Matrix4x4 MakeRotateXMatrix(float radian) {
+    return {
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, cosf(radian), sinf(radian), 0.0f,
+        0.0f, -sinf(radian), cosf(radian), 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+    };
+}
+
+Matrix4x4 MakeRotateYMatrix(float radian) {
+    return {
+        cosf(radian), 0.0f, -sinf(radian), 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        sinf(radian), 0.0f, cosf(radian), 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+    };
+}
+
+Matrix4x4 MakeRotateZMatrix(float radian) {
+    return {
+        cosf(radian), sinf(radian), 0.0f, 0.0f,
+        -sinf(radian), cosf(radian), 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+    };
+}
+
+
 Matrix4x4 Multiply(const Matrix4x4& matrix1, const Matrix4x4& matrix2) {
     Matrix4x4 result = {};
     for (int i = 0; i < 4; ++i) {

@@ -37,6 +37,13 @@ Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t);
 /// <summary>
 /// Matrix4x4関数
 /// </summary>
+
+Matrix4x4 MakeRotateXMatrix(float radian);
+
+Matrix4x4 MakeRotateYMatrix(float radian);
+
+Matrix4x4 MakeRotateZMatrix(float radian);
+
 Matrix4x4 Multiply(const Matrix4x4& matrix1, const Matrix4x4& matrix2);
 
 Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
